@@ -1,6 +1,7 @@
 FROM amazonlinux:2023
 
-ARG version=26.0.2.11-1
+ARG version=27.0.1.0.10-1
+ARG resource_version=27.0.1.0.10
 ARG package_version=1
 
 RUN set -eux \
@@ -9,17 +10,17 @@ RUN set -eux \
     && echo "localpkg_gpgcheck=1" >> /etc/dnf/dnf.conf \
     && CORRETO_TEMP=$(mktemp -d) \
     && pushd ${CORRETO_TEMP} \
-    && RPM_LIST=("java-26-amazon-corretto-headless-$version.amzn2023.${package_version}.${ARCH}.rpm") \
+    && RPM_LIST=("java-27-amazon-corretto-headless-$version.amzn2023.${package_version}.${ARCH}.rpm" "java-27-amazon-corretto-$version.amzn2023.${package_version}.${ARCH}.rpm") \
     && for rpm in ${RPM_LIST[@]}; do \
-    curl --fail -O https://corretto.aws/downloads/resources/$(echo $version | tr '-' '.')/${rpm} \
+    curl --fail -O https://corretto.aws/downloads/resources/${resource_version}/${rpm} \
     && rpm -K "${CORRETO_TEMP}/${rpm}" | grep -F "${CORRETO_TEMP}/${rpm}: digests signatures OK" || exit 1; \
     done \
     && dnf install -y ${CORRETO_TEMP}/*.rpm \
     && popd \
-    && rm -rf /usr/lib/jvm/java-26-amazon-corretto.${ARCH}/lib/src.zip \
+    && rm -rf /usr/lib/jvm/java-27-amazon-corretto.${ARCH}/lib/src.zip \
     && rm -rf ${CORRETO_TEMP} \
     && dnf clean all \
     && sed -i '/localpkg_gpgcheck=1/d' /etc/dnf/dnf.conf
 
 ENV LANG=C.UTF-8
-ENV JAVA_HOME=/usr/lib/jvm/java-26-amazon-corretto
+ENV JAVA_HOME=/usr/lib/jvm/java-27-amazon-corretto
